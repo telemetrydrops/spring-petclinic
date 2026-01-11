@@ -42,6 +42,10 @@ out/
 ### VS Code ###
 .vscode/
 
+### Local development files ###
+local/
+opentelemetry-javaagent.jar
+
 ### CSS ###
 _site/
 *.css
