@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import io.opentelemetry.api.trace.Span;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -169,6 +171,10 @@ class OwnerController {
 		Optional<Owner> optionalOwner = this.owners.findById(ownerId);
 		Owner owner = optionalOwner.orElseThrow(() -> new IllegalArgumentException(
 				"Owner not found with id: " + ownerId + ". Please ensure the ID is correct "));
+
+		// Add business context to the current span
+		Span.current().setAttribute("owner.name", owner.getFirstName() + " " + owner.getLastName());
+
 		mav.addObject(owner);
 		return mav;
 	}

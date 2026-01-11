@@ -24,6 +24,7 @@ repositories {
   mavenCentral()
 }
 
+ext.otelVersion = "1.58.0"
 ext.checkstyleVersion = "12.1.2"
 ext.springJavaformatCheckstyleVersion = "0.0.47"
 ext.webjarsLocatorLiteVersion = "1.1.2"
@@ -31,6 +32,8 @@ ext.webjarsFontawesomeVersion = "4.7.0"
 ext.webjarsBootstrapVersion = "5.3.8"
 
 dependencies {
+  implementation platform("io.opentelemetry:opentelemetry-bom:${otelVersion}")
+  implementation 'io.opentelemetry:opentelemetry-api'
   implementation 'org.springframework.boot:spring-boot-starter-cache'
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
   implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'

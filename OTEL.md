@@ -53,6 +53,30 @@ otel.resource.attributes=deployment.environment.name=development
 otel.resource.disabled.keys=process.command_args,process.runtime.description,process.executable.path
 ```
 
+## Manual Instrumentation
+
+This project includes manual instrumentation to add business context to traces.
+
+### Dependencies
+
+The OpenTelemetry API is added to `build.gradle`:
+
+```groovy
+implementation platform("io.opentelemetry:opentelemetry-bom:${otelVersion}")
+implementation 'io.opentelemetry:opentelemetry-api'
+```
+
+### Example: Adding Owner Name to Spans
+
+In `OwnerController.showOwner()`, the owner's name is added to the current span:
+
+```java
+Span.current().setAttribute("owner.name", owner.getFirstName() + " " + owner.getLastName());
+```
+
+When the Java agent is attached, `Span.current()` returns the active HTTP server span.
+The `owner.name` attribute will appear on traces for `/owners/{ownerId}` requests.
+
 ## What Gets Instrumented
 
 The Java agent automatically instruments:
