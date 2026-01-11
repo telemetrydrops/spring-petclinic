@@ -27,6 +27,8 @@ spec:
     metadata:
       labels:
         app: petclinic
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "true"
     spec:
       containers:
         - name: workload

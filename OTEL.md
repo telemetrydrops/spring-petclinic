@@ -136,3 +136,61 @@ java -javaagent:local/opentelemetry-javaagent.jar \
 ```bash
 docker compose down
 ```
+
+---
+
+## Kubernetes Deployment with OpenTelemetry Operator
+
+For Kubernetes deployments, use the OpenTelemetry Operator for automatic Java agent injection.
+
+### Install the OpenTelemetry Operator
+
+```bash
+# Install cert-manager (required by the operator)
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.2/cert-manager.yaml
+
+# Wait for cert-manager to be ready
+kubectl wait --for=condition=available --timeout=300s deployment/cert-manager -n cert-manager
+kubectl wait --for=condition=available --timeout=300s deployment/cert-manager-webhook -n cert-manager
+
+# Install the OpenTelemetry Operator
+kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
+```
+
+### Deploy the Observability Stack
+
+```bash
+kubectl apply -f k8s/lgtm.yml
+kubectl apply -f k8s/collector.yml
+kubectl apply -f k8s/instrumentation.yml
+```
+
+### Deploy the Application
+
+The petclinic deployment includes the annotation `instrumentation.opentelemetry.io/inject-java: "true"` which triggers the operator to inject the Java agent:
+
+```bash
+kubectl apply -f k8s/db.yml
+kubectl apply -f k8s/petclinic.yml
+```
+
+### Architecture
+
+```
+┌─────────────┐     ┌─────────────────┐     ┌──────────────┐
+│  PetClinic  │────▶│  OTel Collector │────▶│     LGTM     │
+│ (Java Agent)│     │   (otel:4317)   │     │ (Grafana UI) │
+└─────────────┘     └─────────────────┘     └──────────────┘
+```
+
+- **Java Agent**: Injected by the operator, sends telemetry to the collector
+- **Collector**: Receives OTLP, batches data, forwards to LGTM
+- **LGTM**: Stores traces (Tempo), metrics (Prometheus), logs (Loki), visualizes in Grafana
+
+### Access Grafana
+
+```bash
+kubectl port-forward svc/lgtm 3000:3000
+```
+
+Open http://localhost:3000 (default credentials: admin/admin).
