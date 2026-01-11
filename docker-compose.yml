@@ -19,3 +19,25 @@ services:
       - POSTGRES_PASSWORD=petclinic
       - POSTGRES_USER=petclinic
       - POSTGRES_DB=petclinic
+
+  lgtm:
+    image: grafana/otel-lgtm:latest
+    ports:
+      - "3000:3000"   # Grafana
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/ready"]
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 10
+
+  collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - "./otel-collector-config.yml:/etc/otel-collector-config.yml:ro,z"
+    ports:
+      - "4317:4317"  # OTLP gRPC
+    depends_on:
+      lgtm:
+        condition: service_healthy

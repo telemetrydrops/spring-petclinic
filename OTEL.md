@@ -99,3 +99,40 @@ The Java agent automatically instruments:
 ```bash
 docker stop lgtm && docker rm lgtm
 ```
+
+---
+
+## Docker Compose Setup (with Collector)
+
+For a production-like setup with an OpenTelemetry Collector as a gateway:
+
+```bash
+docker compose up -d lgtm collector
+```
+
+This starts:
+- **Collector** at `localhost:4317` - receives OTLP and forwards to LGTM
+- **LGTM** - Grafana UI at http://localhost:3000
+
+Run the application:
+
+```bash
+java -javaagent:local/opentelemetry-javaagent.jar \
+     -Dotel.javaagent.configuration-file=otel.properties \
+     -jar build/libs/spring-petclinic-4.0.0-SNAPSHOT.jar
+```
+
+### Architecture
+
+```
+┌─────────────┐     ┌─────────────────┐     ┌──────────────┐
+│  PetClinic  │────▶│    Collector    │────▶│     LGTM     │
+│ (Java Agent)│     │ (localhost:4317)│     │ (Grafana UI) │
+└─────────────┘     └─────────────────┘     └──────────────┘
+```
+
+### Cleanup
+
+```bash
+docker compose down
+```
